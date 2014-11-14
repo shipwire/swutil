@@ -3,6 +3,8 @@
 swutil provides small libraries with convenient implementations to complement the
 Go standard library.
 
+[![Build Status](https://travis-ci.org/shipwire/swutil.svg?branch=master)](https://travis-ci.org/shipwire/swutil) [![GoDoc](https://godoc.org/github.com/shipwire/swutil/swio?status.svg)](https://godoc.org/github.com/shipwire/swutil/swio)
+
 ## swio
 --
     import "bitbucket.org/shipwire/swutil/swio"
