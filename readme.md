@@ -1,10 +1,15 @@
-# swio
+# swutil
+
+swutil provides small libraries with convenient implementations to complement the
+Go standard library.
+
+## swio
 --
     import "bitbucket.org/shipwire/swutil/swio"
 
 Package swio provides additional utilities on top of the standard io package.
 
-## Usage
+### Usage
 
 ```go
 var DummyReader = newDummy(time.Now().Unix())
