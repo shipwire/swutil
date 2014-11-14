@@ -12,24 +12,24 @@ import (
 // can't actually jump ahead. To solve this problem, reads from the tail cause
 // the entire remaining contents of the head to be transparently read into memory.
 func ForkReader(r io.Reader, n int) (head, tail io.Reader) {
-	h := &head{
+	h := &headReader{
 		r:    io.LimitReader(r, int64(n)),
 		lock: &sync.Mutex{},
 	}
-	t := &tail{
+	t := &tailReader{
 		r: r,
 		h: h,
 	}
 	return h, t
 }
 
-type head struct {
+type headReader struct {
 	b    *bytes.Buffer
 	r    io.Reader
 	lock *sync.Mutex
 }
 
-func (h *head) Cache() {
+func (h *headReader) Cache() {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 	if h.b == nil {
@@ -38,7 +38,7 @@ func (h *head) Cache() {
 	}
 }
 
-func (h *head) Read(b []byte) (n int, err error) {
+func (h *headReader) Read(b []byte) (n int, err error) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 	if h.b == nil {
@@ -49,12 +49,12 @@ func (h *head) Read(b []byte) (n int, err error) {
 	return
 }
 
-type tail struct {
+type tailReader struct {
 	r io.Reader
-	h *head
+	h *headReader
 }
 
-func (t *tail) Read(b []byte) (int, error) {
+func (t *tailReader) Read(b []byte) (int, error) {
 	t.h.Cache()
 	return t.r.Read(b)
 }
