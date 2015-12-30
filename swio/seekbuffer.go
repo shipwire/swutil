@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"os"
 )
 
 // ReadSeekerAt is the interface that groups io.ReadSeeker and io.ReaderAt.
@@ -132,11 +133,11 @@ func (r *seekBuffer) Seek(offset int64, whence int) (int64, error) {
 
 	// Get new offset (relative to beginning)
 	switch whence {
-	case 0:
+	case os.SEEK_SET:
 		// offset stays as it is
-	case 1:
+	case os.SEEK_CUR:
 		offset = offset + pos
-	case 2:
+	case os.SEEK_END:
 		var remainder []byte
 		remainder, err = ioutil.ReadAll(r.src)
 		r.buf = append(r.buf, remainder...)
