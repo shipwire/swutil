@@ -13,7 +13,7 @@ type ReadSeekerAt interface {
 	io.ReaderAt
 }
 
-// SekerPosition returns the current offset of an io.Seeker
+// SeekerPosition returns the current offset of an io.Seeker
 func SeekerPosition(r io.Seeker) (int64, error) {
 	return r.Seek(0, 1)
 }
