@@ -119,7 +119,7 @@ func (r *seekBuffer) Read(b []byte) (n int, err error) {
 	srcn, err := r.src.Read(b[n:])
 
 	// Add new read from src to r.buf
-	r.buf = append(r.buf, b[n:]...)
+	r.buf = append(r.buf, b[n:n+srcn]...)
 
 	// Seek to new position in r.buf, so we don't read the latest from src again
 	r.position += int64(srcn + n)
@@ -155,7 +155,7 @@ func (r *seekBuffer) Seek(offset int64, whence int) (int64, error) {
 		buf := make([]byte, diff)
 
 		// No. Read diff bytes into src.
-		n, err = r.src.Read(buf)
+		n, err = io.ReadFull(r.src, buf)
 
 		// Copy onto r.buf
 		r.buf = append(r.buf, buf[:n]...)
