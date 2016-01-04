@@ -2,8 +2,35 @@ package swio
 
 import (
 	"bytes"
+	"io"
+	"os"
 	"testing"
 )
+
+type shortReader struct {
+	r io.Reader
+}
+
+func (sr *shortReader) Read(p []byte) (n int, err error) {
+	return sr.r.Read(p[:1])
+}
+
+func TestShortRead(t *testing.T) {
+	r := NewSeekBuffer(&shortReader{bytes.NewBufferString("0123456789")}, 5)
+	ch := make([]byte, 5)
+	io.ReadFull(r, ch)
+	if string(ch) != "01234" {
+		t.Fatalf("Expected 01234, got %s", ch)
+	}
+
+	// seek back and read "4" again and the rest
+	r.Seek(4, os.SEEK_SET)
+	ch2 := make([]byte, 6)
+	io.ReadFull(r, ch2)
+	if string(ch2) != "456789" {
+		t.Fatalf("Expected 456789, got %s", ch2)
+	}
+}
 
 func TestSeekBuffer(t *testing.T) {
 	src := bytes.NewBufferString("abcdefghijklmnopqrstuvwxyz")

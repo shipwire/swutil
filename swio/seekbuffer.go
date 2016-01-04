@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"os"
 )
 
 // ReadSeekerAt is the interface that groups io.ReadSeeker and io.ReaderAt.
@@ -13,7 +14,7 @@ type ReadSeekerAt interface {
 	io.ReaderAt
 }
 
-// SekerPosition returns the current offset of an io.Seeker
+// SeekerPosition returns the current offset of an io.Seeker
 func SeekerPosition(r io.Seeker) (int64, error) {
 	return r.Seek(0, 1)
 }
@@ -118,7 +119,7 @@ func (r *seekBuffer) Read(b []byte) (n int, err error) {
 	srcn, err := r.src.Read(b[n:])
 
 	// Add new read from src to r.buf
-	r.buf = append(r.buf, b[n:]...)
+	r.buf = append(r.buf, b[n:n+srcn]...)
 
 	// Seek to new position in r.buf, so we don't read the latest from src again
 	r.position += int64(srcn + n)
@@ -132,11 +133,11 @@ func (r *seekBuffer) Seek(offset int64, whence int) (int64, error) {
 
 	// Get new offset (relative to beginning)
 	switch whence {
-	case 0:
+	case os.SEEK_SET:
 		// offset stays as it is
-	case 1:
+	case os.SEEK_CUR:
 		offset = offset + pos
-	case 2:
+	case os.SEEK_END:
 		var remainder []byte
 		remainder, err = ioutil.ReadAll(r.src)
 		r.buf = append(r.buf, remainder...)
@@ -154,7 +155,7 @@ func (r *seekBuffer) Seek(offset int64, whence int) (int64, error) {
 		buf := make([]byte, diff)
 
 		// No. Read diff bytes into src.
-		n, err = r.src.Read(buf)
+		n, err = io.ReadFull(r.src, buf)
 
 		// Copy onto r.buf
 		r.buf = append(r.buf, buf[:n]...)
